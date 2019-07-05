@@ -1,0 +1,15 @@
+{
+  "name": "drupal/cs_pdf",
+  "type": "drupal-module",
+  "description": "Creats PDF from Product Listings.",
+  "keywords": ["drupal", "PDF"],
+  "authors": [
+    {
+      "name": "Bruce A. Knack",
+      "homepage": "https://www.siliconsurfers.com"
+    }
+  ],
+  "require": {
+    "mikehaertl/phpwkhtmltopdf": "PhpWkhtmlToPdf provides the PHP library to use Wkhtmltopdf"
+  }
+}

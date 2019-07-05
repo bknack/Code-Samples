@@ -1,0 +1,30 @@
+cs_cart.display:
+  path: /request
+  defaults:
+    _controller: \Drupal\cs_cart\Controller\CartsController::cartPage
+    _title: 'Request Information'
+  requirements:
+    _access: 'TRUE'
+cs_cart.empty:
+  path: /cart/empty
+  defaults:
+    _controller: \Drupal\cs_cart\Controller\CartsController::emptyCart
+    _title: 'Empty Cart'
+  requirements:
+    _access: 'TRUE'
+cs_cart.list:
+  path: /add/product/{sProductVariationId}
+  defaults:
+    _controller: \Drupal\cs_cart\Controller\CartsController::addToCart
+    _title: ''
+  requirements:
+    _permission: access content
+    productId: \d+
+cs_cart.page:
+  path: /products/cart
+  requirements:
+    _access: 'TRUE'
+cs_cart.search_page:
+  path: /products/catalog-parts/product-search
+  requirements:
+    _access: 'TRUE'

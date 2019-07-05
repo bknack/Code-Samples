@@ -1,0 +1,205 @@
+/**
+ * Bruce A. Knack
+ * Silicon Surfers
+ *
+ * U-Support@SiliconSurfers.com
+ * SiliconSurfers.com
+ *
+ * Project: U V0
+ * Created: 2018-05-13.1842
+ *
+ * Created with JetBrains PhpStorm.
+ */
+
+/* #overlayAccount @see: InterfaceAccount.css */
+    #oA                      /* #overlayAccount */ {
+      background-color                                     : rgb(255, 255, 255);
+      border                                               : 2px solid var(--orange-border);
+      border-radius                                        : 16px;
+      box-shadow                                           : 10px 10px 19px var(--blue-background-50);
+      color                                                : #000;
+      display                                              : none;
+      font-size                                            : 55px              !important;
+      height                                               : auto;
+      line-height                                          : normal;
+      margin                                               : 0;
+      min-width                                            : 720px;
+      overflow-x                                           : hidden;
+      overflow-y                                           : scroll;
+      padding                                              : 48px 0 0 0;
+      position                                             : absolute;
+      top                                                  : 37px;
+      width                                                : auto;
+      z-index                                              : 103;
+    }
+      #oA div                /* #overlayAccount div */ {
+        padding                                            : 0 48px 48px 48px;
+      }
+
+      #oA .bB                 /* #overlayAccount .buttonBox */ {
+        padding                                            : 48px 0;
+      }
+
+/* .submitButton.contactUs @see: InterfaceAccount.css */
+        #oA .sB.cU           /* #overlayAccount .submitButton.contactUs */ {
+          margin                                           : -20px auto 40px auto;
+          padding-bottom                                   : 10px;
+          padding-top                                      : 10px;
+        }
+
+        #oA .sB.sO.d         /* #overlayAccount .submitButton.signOut.disabled */ {
+          background-color                                 : #eaeaea;
+          border                                           : 2px solid var(--orange-border);
+          color                                            : grey;
+          cursor                                           : default;
+        }
+
+/* Links... */
+        #l                   /* #links */ {
+          position                                         : relative;
+          top                                              : 40px;
+        }
+        .aL                  /* .aboutLink */,
+        .pL                  /* .privacyLink */,
+        .tL                  /* .termsLink */ {
+          font-size                                        : 39px;
+          position                                         : relative;
+          text-decoration                                  : none;
+        }
+        #l .aL               /* #links .accountLink */ {
+          left                                             : 135px;
+        }
+        .pL                  /* .privacyLink */ {
+          display                                          : block;
+          margin                                           : 0 auto;
+          top                                              : -45px;
+          width                                            : 96px;
+        }
+        .tL                  /* .termsLink */ {
+          float                                            : right;
+          top                                              : -90px;
+        }
+        #l .tL               /* #links .accountLink */ {
+          right                                            : 135px;
+        }
+/* #uVersion */
+        .uVer                /* .uVersion */ {
+          font-size                                        : 39px;
+          margin                                           : 0 auto;
+          /* Used because the text's actual width will vary but likely be within 586px (width @ this font-size & font-family monospace */
+          text-align                                       : center;
+          width                                            : 586px;
+        }
+
+/* #overlaySignIn @see: InterfaceAccount.css */
+    #oSI                     /* #overlaySignIn */ {
+      background-color                                     : transparent;
+      border                                               : 0 none transparent;
+      border-radius                                        : 0;
+      display                                              : block;
+      height                                               : 916px;
+/*    left                                             @see: oB.Device.js */
+      opacity                                              : 1;
+      overflow-x                                           : hidden;
+      overflow-y                                           : auto;
+      position                                             : absolute;
+      top                                                  : -916px;
+      transition                                           : top 500ms;                            /* Scrolls down from above, so not hidden by display: none */
+      width                                                : 1200px;
+      z-index                                              : 102;
+    }
+    #oSI.iF                  /* #overlaySignIn.interfaceFrame */ {
+      background-color                                     : white;
+      border                                               : 3px solid var(--orange-border);
+      border-radius                                        : 25px;
+      height                                               : 910px;
+      width                                                : 1194px;
+      z-index                                              : 103;
+    }
+    #oSI.n                   /* #overlaySignIn.down */ {
+      top                                                  : 300px;
+    }
+/* #joinNote */
+      #jN                    /* #joinNote */ {
+        display                                            : none;
+        font-size                                          : 45px;
+        left                                               : 10px;
+        line-height                                        : 43px;
+        padding                                            : 4px 8px 4px 8px;
+        position                                           : static;
+        margin-left                                        : auto;
+        margin-right                                       : auto;
+        text-align                                         : center;
+        top                                                : 50px;
+        width                                              : 600px;
+        z-index                                            : 20;
+      }
+      .sB                    /*                   .submitButton */ {
+        width                                              : 245px;
+      }
+      .sB.cU                 /*                 .submitButton.contactUs */ {
+        height                                             : 150px;
+        width                                              : 300px;
+      }
+      .jBB.jB                /* .joinBetaButton.joinBeta */ {
+        height                                             : 160px;
+        width                                              : 300px;
+      }
+      #oSI .sB.cU            /* #overlaySignIn .submitButton.contactUs */ {
+        position                                           : static;
+      }
+      #oSI .sIB              /* #overlaySignIn .signInButton */ {
+        border                                             : 4px solid;
+        border-radius                                      : 16px;
+        cursor                                             : pointer;
+        display                                            : inline-block;
+        font-size                                          : 75px;
+        height                                             : 130px;
+        left                                               : 141px;
+        margin-top                                         : 75px;
+        padding                                            : 8px 0 8px 16px;
+        position                                           : relative;
+        width                                              : 920px;
+      }
+      #oSI .sIB.gl           /* #overlaySignIn .signInButton.google */ {
+        background                                         : #fff;
+        border-color                                       : lightgray;
+      }
+      #oSI .sIB.fb           /* #overlaySignIn .signInButton.facebook */ {
+        background                                         : #3b4685;
+        border-color                                       : rgb(2, 118, 253);
+      }
+        #oSI .ic             /* #overlaySignIn .icon */ {
+          display                                          : table-cell;
+          top                                              : 1px;
+          width                                            : 122px;
+        }
+        #oSI .tx             /* #overlaySignIn .text */ {
+          color                                            : #fff;
+          display                                          : table-cell;
+          vertical-align                                   : middle;
+          white-space                                      : nowrap;
+        }
+        #oSI .gl>.tx         /* #overlaySignIn .google>.text */{
+          color                                            : #757575;
+        }
+
+/* .servicesSprite 1 & 2 @see: InterfaceAccount.css & OnBoarding.css */
+          .sS1               /* .servicesSprite1: facebook */,
+          .sS2               /* .servicesSprite2: Google */ {
+            background                                     : url(//res.cloudinary.com/u/image/sprite/q_auto,f_auto/v1527025326/signInServices) no-repeat;
+            height                                         : 100px;
+            position                                       : relative;
+            width                                          : 100px;
+            top                                            : 10px;
+          }
+          .sS1               /* .servicesSprite1 */ {
+            background-position                            : 0    0;
+          }
+          .sS2               /* .servicesSprite2 */ {
+            background-position                            : 0 -100px;
+          }
+
+    #dDC.n                   /* .dropDownCombo.down */ {
+      top                                                  : 1700px;
+    }

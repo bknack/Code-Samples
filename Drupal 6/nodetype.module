@@ -1,0 +1,450 @@
+<?php
+  /**
+   * Code Sample Notes:
+   *
+   * This is a Drupal 6 module to allow manipulation by Drupal of a custom Node Type.
+   *
+   * It also adds a function that handles versioning for the overall application.
+   *
+   * In this file, the sitename (Site Name), appname (App Name), nodetype (Node Type) and modulename (Module Name)
+   * where all logically different but used the same name.
+   *
+   * For example, let's pretend this site was Bubbles, and it runs a webapp called Bubbles. This module (called bubbles.module) allows the Drupal system to
+   * create new Bubbles (nodetype) as well as provide functions to manipulate the Bubbles.
+   *
+   * N.B.: I often leave the top comments in for easy reference.
+   */
+
+  /**
+   *
+   * Bruce A. Knack
+   * Silicon Surfers
+   *
+   * EMail: AppName-Support@siliconsurfers.com
+   * http://www.siliconsurfers.com
+   *
+   * Project: AppName V4
+   * Created: 2016-01-16 at 09:25
+   *
+   * Created with JetBrains PhpStorm.
+   *
+   */
+  define('SITENAME_sTopLevelDomain'                        , 'com');
+
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/sites/all/appname/interface/php/init.php';
+
+  /**
+   * Given a file, i.e. /css/base.css, replaces it with a string containing the file's mtime, i.e. /css/base.1221534296.css.
+   * See: http://stackoverflow.com/questions/118884/what-is-an-elegant-way-to-force-browsers-to-reload-cached-css-js-files?lq=1
+   *
+   * N.B.: If the server is the development server, the file is returned up touched, otherwise debugging is much more time
+   *       consuming as each time a file is updated it must be located and reloaded in the testing environment.
+   *
+   * @param                                                string              $sFileName          The file to be loaded.  Must be an absolute path (i.e. starting with slash).
+   *
+   * @return                                               mixed
+   */
+  function Auto_Version($sFileName) {
+    // Only do this outside of the test environment.
+    if ($_SERVER['DOCUMENT_ROOT'] <> '/Users/bknack/PHPStormProjects/Clients/SiteName/sitename.info') {
+      if ((0 !== strpos($sFileName, '/')) || (!file_exists($_SERVER['DOCUMENT_ROOT'] . $sFileName))) {
+  return $sFileName;
+      }
+
+      $iFileMTime                                            = filemtime($_SERVER['DOCUMENT_ROOT'] . $sFileName);
+  return preg_replace('{\\.([^./]+)$}', ".$iFileMTime.min.\$1", $sFileName);
+    } else {
+  return $sFileName;
+    }
+  }
+
+  /**
+   * @param                                                object              $oNode
+   * @param                                                string              $sOperation
+   * @param                                                null                $Teaser
+   * @param                                                null                $Page
+   */
+	function modulename_nodeapi(&$oNode,
+                              $sOperation,
+                              $Teaser                      = null,
+                              $Page                        = null) {
+
+    $iBreakPoint                                           = 0;
+
+		switch ($sOperation) {
+      case 'update':                                                                               /* See http://api.drupal.org/api/drupal/developer--hooks--core.php/function/hook_nodeapi/6 */
+				if ($oNode->type == 'nodetype') {
+					$sUpdateQuery                                    = "
+update             MindportNeurons
+  set              sLabel                                  =  '" . MP_DB_Escape_String($oNode->title) . "'
+  where            drupal_node_nid                         =  $oNode->nid
+    and            iParentNeuron                           =  0
+";
+					MP_DB_Query($sUpdateQuery);
+				}
+		break;
+
+      case 'insert':                                                                               /* See http://api.drupal.org/api/drupal/developer--hooks--core.php/function/hook_nodeapi/6 */
+				if ('nodetype' == $oNode->type) {
+					/* if the 'copy' variable is set, prepopulate the new nodetype with the older one. That is, copy it. */
+					$iCopyNodeId                                     =    (int)Get_Parameter('copy', 0);
+					// no Mindport is listed OR the listed Mindport is NOT a template, we will just append an "empty" Mindport.
+					if (0 == $iCopyNodeId) {
+            // We only insert columns that have non-default values.
+						$sInsertQuery                                  = "
+insert
+  into             MindportNeurons
+  (                iNeuron,
+                   drupal_users_uid,
+                   drupal_node_nid,
+                   iParentNeuron,
+                   iLocation,
+                   sLabel,
+                   eType
+  ) values (       0,
+                   $oNode->uid,
+                   $oNode->nid,
+                   0,
+                   0,
+                   '" . MP_DB_Escape_String($oNode->title) . "',
+                   'category'
+  )
+";
+						MP_DB_Query($sInsertQuery);
+ 					} else {
+						// Let's copy the Mindport...
+            $aNeurons                                      = [];
+						$sSelectQuery                                  = "
+select             *
+  from             MindportNeurons
+  where            drupal_node_nid                         =  $iCopyNodeId
+";
+						$rResult                                       = MP_DB_Query($sSelectQuery);
+						while ($aNeuron                                = MP_DB_Fetch_Assoc($rResult)) {
+              $aNeurons[]                                  = $aNeuron;                             // Grab all the rows at once.
+						}
+
+            $iNumberOfNeurons                              = sizeof($aNeurons);
+            for ($iThisNeuron = 0; $iThisNeuron < $iNumberOfNeurons; $iThisNeuron++) {
+							// Patch to place the New title at RootNeuron of the copy.
+							if (0 == $aNeurons[$iThisNeuron]['iParentNeuron']) {                                 // Identifies RootNeuron...
+                $aNeurons[$iThisNeuron]['sLabel']          = MP_DB_Escape_String($oNode->title);
+							}
+
+              $sInsertQuery                                = "
+insert
+  into             MindportNeurons
+  (                iNeuron,
+                   drupal_users_uid,
+                   drupal_node_nid,
+                   iParentNeuron,
+                   iLocation,
+                   sLabel,
+                   eType,
+                   eAttribute,
+                   oContent,
+                   iMindportContent,
+                   sCategoryImageName,
+                   sImageName,
+                   iMeldedRootNeuron,
+                   eWebsiteNoPreview
+  ) values (       0,
+                   $oNode->uid,
+                   $oNode->nid,
+                   0,
+                   "  .                     $aNeurons[$iThisNeuron]['iLocation'         ]  . " ,
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['sLabel'            ]) . "',
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['eType'             ]) . "',
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['eAttribute'        ]) . "',
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['oContent'          ]) . "',
+                   "  .                     $aNeurons[$iThisNeuron]['iMindportContent'  ]  . " ,
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['sCategoryImageName']) . "',
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['sImageName'        ]) . "',
+                   "  .                     $aNeurons[$iThisNeuron]['iMeldedRootNeuron' ]  . " ,
+                   '" . MP_DB_Escape_String($aNeurons[$iThisNeuron]['eWebsiteNoPreview' ]) . "'
+  )
+";
+              $rResult                                     = MP_DB_Query($sInsertQuery) or die ('Query Failed: ModuleName, Copy Mindport');
+              $aNeurons[$iThisNeuron]['iNewNeuron']        = MP_DB_Insert_Id();
+
+							// !!!	We do a funky thing where we set MindportContent.iNeuron=MindportNeurons.iNeuron when we have
+							// !!!	extra content.
+							//
+							// Now copy the content, if there is any.
+							$sSelectQuery                                = "
+select             *
+  from             MindportContent
+  where            iNeuron                                 =  " . $aNeurons[$iThisNeuron]['iNeuron'] . "
+";
+							$rResult                                     = MP_DB_Query($sSelectQuery);
+							while ($aContent                             = MP_DB_Fetch_Assoc($rResult)) {
+ 								$sInsertQuery                              = "
+insert
+  into             MindportContent
+  (                iNeuron,
+                   Image
+  ) values (       "  . $aNeurons[$iThisNeuron]['iNewNeuron']   . ",
+                   '" . MP_DB_Escape_String($aContent['Image']) . "'
+  )
+";
+								MP_DB_Query($sInsertQuery);
+
+                if ($aNeurons[$iThisNeuron]['iMindportContent'] == $aContent['iMindportContent']) {
+                  $iMindportContent                        = MP_DB_Insert_Id();
+                  $sUpdateQuery                            = "
+update             MindportNeurons
+  set              iMindportContent                        =  $iMindportContent
+  where            iNeuron                                 =  " . $aNeurons[$iThisNeuron]['iNewNeuron'] . "
+    ";
+                  $rResult                                 = MP_DB_Query($sUpdateQuery) or die ('Query Failed: ModuleName, Copy Mindport 2');
+                }
+							}
+
+              // Finally, go thru the copied Neurons and update their 'iParentNeuron' links
+              for ($iTestNeuron = 0; $iTestNeuron < $iNumberOfNeurons; $iTestNeuron++) {
+                if ($aNeurons[$iTestNeuron]['iParentNeuron'] == $aNeurons[$iThisNeuron]['iNeuron']) {
+                  $aNeurons[$iTestNeuron]['iParentNeuron'] = $aNeurons[$iThisNeuron]['iNewNeuron'];
+								}
+							}
+						}
+
+            // Update the DB to match the updates we made to the $aNeurons.
+            for ($iThisNeuron = 0; $iThisNeuron < $iNumberOfNeurons; $iThisNeuron++) {
+              $sUpdateQuery                                = "
+update             MindportNeurons
+  set              iParentNeuron                           =  " . $aNeurons[$iThisNeuron]['iParentNeuron'] . "
+  where            iNeuron                                 =  " . $aNeurons[$iThisNeuron]['iNewNeuron'   ] . "
+";
+							@ MP_DB_Query($sUpdateQuery);
+						}
+					}
+				}
+		break;
+		}
+	}
+
+	/**
+	 * Implementation of hook_form_alter().
+	 *
+	 * This lets you make changes to any form in the site. You can alter, remove
+	 * or add form elements. You can also alter the validation and submission
+	 * behavior. The name will always be modulename_form_alter.
+	 *
+   * @param                                                object              $oForm
+   * @param $FormState
+   * @param                                                string              $sFormId
+   *
+   * @return                                               object
+	 */
+	function modulename_form_alter(&$oForm, $FormState, $sFormId) {
+//    $iBreakpoint = 1;
+		// Normally a switch is used because you may want to alter more than
+		// one form and it is easy to add a new case for each form.
+		switch($sFormId) {
+      case 'user_login':
+        $oForm['name']['#description']                     = 'You may sign in with either your assigned username or your e-mail address.';
+        $oForm['submit']['#value']                         = 'Sign in';
+
+// We made these two back later
+//        $oForm['openid_links']['#value']                   = str_replace('Log in', 'Sign in', $oForm['openid_links']['#value']);
+//        $oForm['openid_identifier']['#title']              = 'Sign in using OpenID';
+    break;
+
+			case 'user_register':
+			case 'user_profile_form':
+				$oForm['account']['mail']['#description']                                                                                                 = 'A valid e-mail address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.';
+				$oForm['Personal Information - Will be kept private and used to enhance your ModuleName® experience']['profile_name']['#description']      = 'Please enter your First and Last Name.';
+		break;
+
+			case 'nodetype_node_form':
+				$oForm['field_image'][0]['upload']['#description'] = '';
+				$iCopyNodeId                                       =    (int)Get_Parameter('copy', 0);
+				if ($iCopyNodeId > 0) {
+					$oForm['copy']                                   = [
+						'#type'                                        => 'hidden',
+						'#required'                                    => false,
+						'#default_value'                               => $iCopyNodeId,
+						'#weight'                                      => -5
+          ];
+				}
+		break;
+		}
+	return $oForm;
+	}
+
+  /**
+ 	 * Users can look at their own menu. So can folks with 'administer users'.
+   *
+   * @param                                                integer             $iThisUserId
+   *
+   * @return                                               boolean
+   */
+ 	function modulename_menu_user_access($iThisUserId) {
+ 		global $user;
+ 	return (($user->uid == $iThisUserId) || user_access('administer users'));
+ 	}
+
+  /**
+   * @param                                                array             $aThisUserId
+   *
+   * @return                                               string
+   */
+  function modulename_display_public_profile($aThisUserId) {
+    $inlimit                                               = 10;
+    $iThisUser                                             = user_load($aThisUserId);
+ 		$sHTML                                                 = '    <div style="display:block;margin-left:auto;margin-right:auto;width:510px">' . "\n";
+ 		$sHTML                                                .= '      <div class="profileTitle" style="text-align:center">Author Profile</div>' . "\n";
+ 		$sHTML                                                .= '      <div id="Author" style="float:left;">Author: ' . $iThisUser->profile_authorpub . '</div>' . "\n";
+ 		if ($iThisUser->picture != "") {
+ 			$sHTML                                              .= '      <div id="Picture" style="float:right;margin-left:10px;"><a href="/user/' . $iThisUser->uid . '" title="View user profile." class="active"><img src="/' . $iThisUser->picture . '" alt="' . $iThisUser->name . '&#039;s picture" title="' . $iThisUser->name . '&#039;s picture"  /></a>' . "</div>\n";
+ 		}
+    $sHTML                                                .= '<br /><br />' . "\n";
+
+ 		switch ($iThisUser->profile_publishing_info_visibility) {
+      /** @noinspection PhpMissingBreakStatementInspection */
+      case 'Show everything.':
+ 				if ((trim($iThisUser->profile_industry) != '') && (trim($iThisUser->profile_industry) != '0')) {
+ 					$sHTML                                          .= '      <div style="float:left;" id="Industry">Industry: ' . $iThisUser->profile_industry . "</div>\n";
+ 				}
+ 				if ((trim($iThisUser->profile_industry_experience) != '') && (trim($iThisUser->profile_industry_experience) != '0')) {
+ 					$sHTML                                          .= '      <div style="float:right;" id="Years">Years: ' . $iThisUser->profile_industry_experience . "</div><br />\n";
+ 				}
+ 			case 'Only show my publishing name and bio.':
+ 				$sHTML                                            .= '      <div id="Bio">Bio:<br /><textarea style="width:505px;" rows="5" readonly="readonly">' . $iThisUser->profile_biography . "</textarea></div>\n";
+ 		break;
+ 		}
+
+ 		$sHTML                                                .= '      <hr style="clear:both;height:2px;border-width:0;color:gray;background-color:gray;width:80%" />' . "\n";
+ 		$sHTML                                                .= '      <div class="profileMindportLists">' . "\n";
+
+ 		if (trim($iThisUser->profile_display_favorites) == '1') {
+ 			$sHTML                                              .= '        <div id="profileModuleName">' . "\n";
+    }
+    $sHTML                                                .= '        <div class="profileTitle">ModuleName</div>' . "\n";
+
+    $rResult                                               = pager_query(db_rewrite_sql("
+select             dn.nid,
+                   dn.title,
+                   dctm.field_template_value
+
+  from             drupal_node                             as dn
+  inner join       drupal_content_type_nodetype            as dctm
+
+  where            dn.uid                                  =  $iThisUser->uid
+    and            dn.nid                                  =  dctm.nid
+    and            dctm.field_private_value                =  'public'
+
+  order by         dn.title
+"
+                                                           ), variable_get('default_nodes_main', $inlimit));
+    while ($oRow                                           = db_fetch_object($rResult)) {
+      $sDisplayTemplate                                    = '';
+      $sDisplayRightBracketEtc                             = '';
+
+      if ($oRow->field_template_value == 'Yes') {
+        $sDisplayTemplate                                  = '<span class="templateHilite">';
+        $sDisplayRightBracketEtc                           = '</span>';
+      }
+
+      $sHTML                                              .= '        <a href="/node/' . $oRow->nid . '" id="showDesc"><img class="nodeTypeInfo" src="http://assets.sitename.' . MINDPORT_sTopLevelDomain . '/interface/info.gif" /></a>&nbsp;<a target="_blank" href="/sitename?nodetype=' . $oRow->nid . '">' . $sDisplayTemplate . $oRow->title . $sDisplayRightBracketEtc . '</a><br />' . "\n";
+    }
+
+    if (trim($iThisUser->profile_display_favorites) == '1') {
+      $sHTML                                              .= '        </div>' . "\n\n";
+
+      $sHTML                                              .= '        <div id="profileFavorites">' . "\n";
+      $sHTML                                              .= '        <div class="profileTitle">Favorites</div>' . "\n";
+      $rResult                                             = pager_query(db_rewrite_sql("
+select             mf.drupal_node_nid,
+                   mf.sTitle,
+                   mf.iNeuron,
+                   dctm.field_template_value
+
+ from              MindportFavorites                       as mf
+ inner join        drupal_content_type_nodetype            as dctm
+
+where              mf.drupal_users_uid                     =  $iThisUser->uid
+  and              mf.drupal_node_nid                      =  dctm.nid
+
+order by           mf.sTitle
+;"
+                                                           ), variable_get('default_nodes_main', $inlimit));
+      while ($oRow                                         = db_fetch_object($rResult)) {
+        $sDisplayTemplate                                  = '';
+        $sDisplayRightBracketEtc                           = '';
+
+        if ($oRow->field_template_value == 'Yes') {
+          $sDisplayTemplate                                = '<span class="templateHilite">';
+          $sDisplayRightBracketEtc                         = '</span>';
+        }
+
+        $sHTML                                            .= '        <a href="/node/' . $oRow->drupal_node_nid . '" id="showDesc"><img class="nodeTypeInfo" src="http://assets.sitename.' . MINDPORT_sTopLevelDomain . '/interface/info.gif" /></a>&nbsp;<a href="/sitename?nodetype=' . $oRow->drupal_node_nid . '">' . $sDisplayTemplate . $oRow->sTitle . $sDisplayRightBracketEtc . '</a><br />' . "\n";
+      }
+      $sHTML                                              .= '        </div>' . "\n";
+    }
+
+    $sHTML                                                .= '      </div>
+       </div>
+    ';
+    $sHTML                                                .= '    <hr style="clear:both;height:2px;border-width:0;color:gray;background-color:gray;width:80%" />' . "\n";
+ 	return $sHTML;
+ 	}
+
+  /**
+   * @param                                                integer             $iThisUserId
+   *
+   * @return                                               string
+   */
+  function modulename_display_nodetype($iThisUserId) {
+ 	return views_embed_view('My_ModuleName', 'default', $iThisUserId) . "\n";
+ 	}
+
+	/**
+	 * Implementation of hook_menu(). 
+   *
+   * @return                                               array
+   */
+	function modulename_menu() {
+		// My Public Profile
+		$aItems['user/%/mypublicprofile']                      = [
+			'title'                                              => 'My Public Profile',
+			'description'                                        => 'Displays the parts of the profile that are displayed to the public.',
+			'page callback'                                      => 'modulename_display_public_profile',
+			'page arguments'	                                   => [1],
+			'access callback'	                                   => 'modulename_menu_user_access',
+			'access arguments'                                   => [1],
+			'type'                                               => MENU_LOCAL_TASK,
+		];
+
+		// My ModuleName
+		$aItems['user/%/mynodetype']                          = [
+			'title'                                              => 'My NodeType',
+			'description'                                        => 'Displays a full list of AppItemNames, whether published or not.',
+			'page callback'                                      => 'modulename_display_nodetype',
+			'page arguments'                                     => [1],
+			'access callback'	                                   => 'modulename_menu_user_access',
+			'access arguments'                                   => [1],
+			'type'                                               => MENU_LOCAL_TASK,
+		];
+
+	return $aItems;
+	}
+
+	/**
+	 * Implementation of hook_menu_alter().
+	 * Remember to clear the menu cache after adding/editing this function.
+   *
+   * @param                                                array               $aItems
+   */
+	function modulename_menu_alter(&$aItems) {
+		// Removing certain local navigation tabs that are either undesired or need to be custom relocated.
+
+		// Set these tabs to MENU_CALLBACK, so they still register the path, but just don't show the tab:
+		// $items['node/%node/track']['type'] = MENU_CALLBACK;
+  
+		// Fully unset these tabs and their paths, don't want them at all. This breaks the path as well:
+    // Change the name of the Edit tab
+    $aItems['user']['title']                               = t('Sign In');
+
+		unset($aItems['search/user']);
+	}

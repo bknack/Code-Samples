@@ -1,0 +1,12 @@
+name: CS PDF
+type: module
+description: Creats PDF from Product Listings.
+package: CS
+core: 8.x
+dependencies:
+  - drupal:views
+  - commerce:commerce
+  - commerce:commerce_order
+  - commerce:commerce_product
+  - cs_cart
+php: 7.1

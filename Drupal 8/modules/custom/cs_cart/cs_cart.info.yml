@@ -1,0 +1,9 @@
+name: CS Cart
+type: module
+description: Supports Product Search [+ My Folder], My Folder [Download] and [Clear All] and the Request Information Page.
+package: CS
+core: 8.x
+dependencies:
+  - commerce:commerce
+  - commerce:commerce_order
+  - commerce:commerce_product

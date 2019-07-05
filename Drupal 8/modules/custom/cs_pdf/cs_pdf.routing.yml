@@ -1,0 +1,12 @@
+cs_pdf.list:
+  path: /add/product/pdf/{sViewName}/{sViewDisplay}
+  defaults:
+    _controller: \Drupal\cs_pdf\Controller\PDFController::processPDF
+    _title: ''
+  requirements:
+    _permission: access content
+    productId: \d+
+cs_pdf.page:
+  path: /products/catalog-parts/product-search
+  requirements:
+    _access: 'TRUE'
