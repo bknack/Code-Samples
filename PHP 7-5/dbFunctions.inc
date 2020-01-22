@@ -4,11 +4,11 @@
    *
    * This is a set of functions that made it much easier to work with PDO!
    *
-   * Notice that there are PHP 7 types etc. commented out. This file was designed to work with Drupal 7. When the
-   * decision was taken to go with Google App Engine, we dropped to Drupal 5 so we had a fast fully supported version of
+   * Notice that there are PHP 7 types etc. commented out. This file was designed to work with PHP 7. When the
+   * decision was taken to go with Google App Engine, we dropped to PHP 5 so we had a fast fully supported version of
    * PHP. Hence, the commenting out.
    *
-   * I hoped we could go back to Drupal 7 one day ;-)
+   * I hoped we could go back to PHP 7 one day ;-)
    */
 
   /**
@@ -52,8 +52,8 @@
 /*  PDO          */$dbhQuery,
 /*  PDOStatement */$dbQuery,
 /*  array        */$aData,
-/*  bool         */$bSessionInsert                         = false,
-/*  bool         */$bRollBackRequired                      = false
+/*               */$bSessionInsert                         = false,
+/*               */$bRollBackRequired                      = false
   ) {
     $biReturnValue                                         = false;
     try {                                                                                          // Load the execute object with the data
@@ -78,7 +78,7 @@
    */
   function json_Die(
 /*  PDOException */$peException,
-/*  bool         */$bSessionInsert                         = false
+/*               */$bSessionInsert                         = false
   )/*: void */{
     if ($bSessionInsert) {
       if ('23000' === $peException->getCode()) {                                                   // Insert failures (if we're inserting) are OK!
@@ -108,9 +108,9 @@ exit(json_encode(["status" => "ERROR", "message" => $peException->getMessage()])
    */
   function Perform_Query(
 /*  PDO          */$dbhQuery,
-/*  string       */$sQuery,
+/*               */$sQuery,
 /*  array        */$aData,
-/*  bool         */$bSessionInsert                         = false
+/*               */$bSessionInsert                         = false
   ) {
     $dbQuery                                               = Prepare_Query($dbhQuery, $sQuery);
 
@@ -128,7 +128,7 @@ exit(json_encode(["status" => "ERROR", "message" => $peException->getMessage()])
    */
   function Prepare_Query(
 /*  PDO          */$dbhQuery,
-/*  string       */$sQuery
+/*               */$sQuery
   )/*: PDOStatement */{
     global $aPreparedQueries;
 
@@ -157,8 +157,8 @@ json_Die($peException);
    * @return                                               PDO
    */
   function U_DB_Connect(
-/*  string       */$sDataBaseName                          = P_sUser,
-/*  string       */$sInstanceConnectionName                = U_sInstanceConnectionName
+/*               */$sDataBaseName                          = P_sUser,
+/*               */$sInstanceConnectionName                = U_sInstanceConnectionName
   )/*: PDO */{
     // @see: https://websitebeaver.com/php-pdo-prepared-statements-to-prevent-sql-injection
     $sDataSourceName                                       = 'mysql:unix_socket=/cloudsql/' . $sInstanceConnectionName . ';dbname=' . $sDataBaseName . ';charset=utf8mb4';
@@ -191,7 +191,7 @@ json_Die($peException);
    */
   function U_DB_Delete(
 /*  PDO          */$dbhDelete,
-/*  string       */$sDeleteQuery,
+/*               */$sDeleteQuery,
 /*  array        */$aDeleteData
   )/*: void */{
     Perform_Query($dbhDelete, $sDeleteQuery, $aDeleteData);
@@ -208,9 +208,9 @@ json_Die($peException);
    */
   function U_DB_Insert(
 /*  PDO          */$dbhInsert,
-/*  string       */$sInsertQuery,
+/*               */$sInsertQuery,
 /*  array        */$aInsertData,
-/*  bool         */$bSessionInsert                         = false
+/*               */$bSessionInsert                         = false
   ) {
     $biReturn                                              = Perform_Query($dbhInsert, $sInsertQuery, $aInsertData, $bSessionInsert);
     if (!$bSessionInsert && (false === $biReturn)) {
@@ -237,7 +237,7 @@ json_Die($peException);
    */
   function U_DB_Multi_Insert(
 /*  PDO          */$dbhInsert,
-/*  string       */$sInsertQuery,
+/*               */$sInsertQuery,
 /*  array        */$aMultiInsertData
   )/*: void */{
     $dbInsert                                              = null;
@@ -261,7 +261,7 @@ json_Die($peException);
    */
   function U_DB_Multi_Update(
 /*  PDO          */$dbhUpdate,
-/*  string       */$sUpdateQuery,
+/*               */$sUpdateQuery,
 /*  array        */$aMultiUpdateData
   )/*: void */{
     // ToDo: See the following if you need to INSERT multiple rows:
@@ -296,7 +296,7 @@ json_Die($peException);
    */
   function U_DB_Select(
 /*  PDO          */$dbhSelect,
-/*  string       */$sSelectQuery,
+/*               */$sSelectQuery,
 /*  array        */$aSelectData
   ) {
 
@@ -323,7 +323,7 @@ json_Die($peException);
    */
   function U_DB_Update(
 /*  PDO          */$dbhUpdate,
-/*  string       */$sUpdateQuery,
+/*               */$sUpdateQuery,
 /*  array        */$aUpdateData
   )/*: void */{
     Perform_Query($dbhUpdate, $sUpdateQuery, $aUpdateData);
