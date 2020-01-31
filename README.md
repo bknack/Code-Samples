@@ -1,15 +1,24 @@
 These **Code Samples** include JavaScript, CSS and PHP. 
 
-The PHP samples cover Drupal 6, Drupal 8 and PHP 7 -> 5.
+The PHP samples cover WordPress, Drupal 6, Drupal 8 and PHP 7 -> 5.
 
 _**Please note**_ that I have developed a consistant style in writing code. I use this style across languages and markup.
 
-I'm aware that my style deviates from the Drupal standard. I would be happy to conform to that (or another) standard in lieu of my own.
+I'm aware that my style deviates from the WordPress & Drupal standards. I would be happy to conform to that (or another) standard in lieu of my own.
 
 In all cases, the files have been 'sanitized' to remove an 'proprietary' references since
 all of these are actual production code.
 
 <ul>
+  <li>
+    WordPress is a plugin to handle importing a CSV file into WordPress.
+    <ul>
+      <li>
+        See WordPress/README.md
+      </li>
+    </ul>
+  </li>
+
   <li>
     Drupal 6 is a module to deal with a custom node type.
     <ul>
